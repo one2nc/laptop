@@ -4,10 +4,8 @@
 # Be prepared to turn your Mac
 # into an awesome development machine.
 
-
 fancy_echo() {
   local fmt="$1"; shift
-
   # shellcheck disable=SC2059
   printf "\\n$fmt\\n" "$@"
 }
@@ -36,18 +34,20 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 
 set -e
 
+# Create .bin directory if it doesn't exist
 if [ ! -d "$HOME/.bin/" ]; then
   mkdir "$HOME/.bin"
 fi
 
+# Create .zshrc file if it doesn't exist
 if [ ! -f "$HOME/.zshrc" ]; then
   touch "$HOME/.zshrc"
 fi
 
-# shellcheck disable=SC2016
+# Add .bin to PATH
 append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
 
-# Determine Homebrew prefix
+# Determine Homebrew prefix based on architecture
 arch="$(uname -m)"
 if [ "$arch" = "arm64" ]; then
   HOMEBREW_PREFIX="/opt/homebrew"
@@ -56,7 +56,7 @@ else
 fi
 
 update_shell() {
-  local shell_path;
+  local shell_path
   shell_path="$(command -v zsh)"
 
   fancy_echo "Changing your shell to zsh ..."
@@ -67,6 +67,7 @@ update_shell() {
   sudo chsh -s "$shell_path" "$USER"
 }
 
+# Update shell to zsh if not already set
 case "$SHELL" in
   */zsh)
     if [ "$(command -v zsh)" != '/usr/local/bin/zsh' ] ; then
@@ -78,146 +79,87 @@ case "$SHELL" in
     ;;
 esac
 
+# Install Homebrew if not already installed
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
-    /bin/bash -c \
-     "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  /bin/bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-    append_to_zshrc "eval \"\$($HOMEBREW_PREFIX/bin/brew shellenv)\""
+  append_to_zshrc "eval \"\$($HOMEBREW_PREFIX/bin/brew shellenv)\""
 
-    export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+  export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 fi
 
+# Uninstall old Homebrew-Cask if present
 if brew list | grep -Fq brew-cask; then
   fancy_echo "Uninstalling old Homebrew-Cask ..."
   brew uninstall --force brew-cask
 fi
 
+# Update Homebrew formulae
 fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
 
-# show only open app icons in dock
+# Show only open app icons in dock
 defaults write com.apple.dock static-only -bool true; killall Dock
 
-# Unix
-fancy_echo "Installing git"
-brew install git
+# Install essential tools and applications
+install_brew_package() {
+  local package="$1"
+  fancy_echo "Installing $package"
+  brew install "$package"
+}
 
-fancy_echo "Installing openssl"
-brew install openssl
+install_brew_cask() {
+  local cask="$1"
+  fancy_echo "Installing $cask"
+  brew install --cask "$cask"
+}
 
-fancy_echo "Installing zsh"
-brew install zsh
+# Unix tools
+install_brew_package git
+install_brew_package openssl
+install_brew_package zsh
 
-# GitHub
-fancy_echo "Installing Github(gh)"
-brew install gh
+# Applications
+install_brew_cask alfred
+install_brew_cask google-chrome
+install_brew_cask firefox
+install_brew_cask docker
+install_brew_package gh
+install_brew_cask google-drive
+install_brew_cask intellij-idea-ce
+install_brew_cask sublime-text
+install_brew_cask visual-studio-code
+install_brew_package vim
+install_brew_cask iterm2
+install_brew_cask lastpass
+install_brew_cask libreoffice
+install_brew_cask maccy
+install_brew_cask macdown
+install_brew_cask obsidian
+install_brew_cask numi
+install_brew_cask notion
+install_brew_cask postman
+install_brew_cask rectangle
+install_brew_cask scroll-reverser
+install_brew_cask slack
+install_brew_cask tableplus
+install_brew_cask whatsapp
+install_brew_cask zoom
 
-# IDE's
-
-# Intellij CE
-fancy_echo "Installing intellij"
-brew install --cask intellij-idea-ce
-
-# Visual Studio Code
-fancy_echo "Installing visual-studio-code"
-brew install --cask visual-studio-code
-
-# Vim
-fancy_echo "Installing vim"
-brew install vim
-
-# Sublime Text
-fancy_echo "Installing sublime text"
-brew install --cask sublime-text
-
-# Numi Calculator
-fancy_echo "Installing Numi Calculator"
-brew install --cask numi
-
-# Iterm
-fancy_echo "Installing Iterm2"
-brew install --cask iterm2
-
-# Google Chrome
-fancy_echo "Installing Google Chrome"
-brew install --cask google-chrome
-
-# Firefox
-fancy_echo "Installing Firefox"
-brew install --cask firefox
-
-# Obsidian
-fancy_echo "Installing Obsidian"
-brew install --cask obsidian
-
-# Slack
-fancy_echo "Installing Slack"
-brew install --cask slack
-
-# Notion
-fancy_echo "Installing Notion"
-brew install --cask notion
-
-# Macdown
-fancy_echo "Installing macdown"
-brew install --cask macdown
-
-# Maccy
-fancy_echo "Installing maccy"
-brew install --cask maccy
-
-# LibreOffice
-fancy_echo "Installing libreoffice"
-brew install --cask libreoffice
-
-# Postman
-fancy_echo "Installing postman"
-brew install --cask postman
-
-# Scroll Reverser
-fancy_echo "Installing scroll-reverser"
-brew install --cask scroll-reverser
-
-# Rectangle
-fancy_echo "Installing scroll-reverser"
-brew install --cask rectangle
-
-# Table Plus
-fancy_echo "Installing tableplus"
-brew install --cask tableplus
-
-# WhatsApp
-fancy_echo "Installing WhatsApp"
-brew install --cask whatsapp
-
-# Alfred
-fancy_echo "Installing Alfred"
-brew install --cask alfred
-
-# Zoom
-fancy_echo "Installing Zoom"
-brew install --cask zoom
-
-# Docker Desktop
-fancy_echo "Installing Docker-Desktop"
-brew install --cask docker
-
-# Google Drive
-fancy_echo "Installing google-drive"
-brew install --cask google-drive
-
+# Run customizations from ~/.laptop.local if present
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
   # shellcheck disable=SC1090
   . "$HOME/.laptop.local"
 fi
 
-# set default key repeat rate to some sane values
+# Set default key repeat rate to some sane values
 defaults write -g InitialKeyRepeat -int 25
 defaults write -g KeyRepeat -int 2
 
-# enable three-finger drag
+# Enable three-finger drag
 defaults write com.apple.AppleMultitouchTrackpad DragLock -bool false
 defaults write com.apple.AppleMultitouchTrackpad Dragging -bool false
 defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
