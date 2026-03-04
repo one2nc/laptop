@@ -128,7 +128,7 @@ install_brew_cask firefox
 install_brew_cask docker
 install_brew_package gh
 install_brew_cask google-drive
-install_brew_cask intellij-idea-ce
+install_brew_cask intellij-idea
 install_brew_cask sublime-text
 install_brew_cask visual-studio-code
 install_brew_package vim
@@ -136,7 +136,6 @@ install_brew_cask iterm2
 install_brew_cask lastpass
 install_brew_cask libreoffice
 install_brew_cask maccy
-install_brew_cask macdown
 install_brew_cask obsidian
 install_brew_cask numi
 install_brew_cask notion
