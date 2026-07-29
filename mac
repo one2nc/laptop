@@ -142,6 +142,7 @@ install_brew_cask notion
 install_brew_cask postman
 install_brew_cask rectangle
 install_brew_cask scroll-reverser
+install_brew_cask tailscale-app
 install_brew_cask slack
 install_brew_cask tableplus
 install_brew_cask whatsapp
@@ -168,3 +169,4 @@ user=`id -un`
 
 # force user to logout for the key repeat rate and three-finger drag to take effect
 launchctl bootout user/`id -u $user`
+
