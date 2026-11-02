@@ -147,6 +147,10 @@ Scroll Reverser:
 
 - [Scroll Reverser](https://pilotmoon.com/scrollreverser/) is a free Mac app that reverses the direction of scrolling, with independent settings for trackpads and mice.
 
+Tailscale:
+
+- [Tailscale](https://tailscale.com/) is a zero-config VPN that makes devices and services on your network easier to reach.
+
 Slack:
 
 - [Slack](https://slack.com) is a messaging program designed specifically for the office.
